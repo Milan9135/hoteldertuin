@@ -1,0 +1,87 @@
+﻿@page "/register"
+
+<PageTitle>Register</PageTitle>
+
+@inject UserService UserService
+@inject NavigationManager Navigation
+
+<h3>Register</h3>
+
+<label>Naam</label>
+<input type="text" placeholder="Naam" @bind="Name" />
+
+<label>Email</label>
+<input type="email" placeholder="Email" @bind="Email" />
+
+<label>Telefoonnummer</label>
+<input type="tel" placeholder="Telefoonnummer" @bind="PhoneNumber" />
+
+<label>Wachtwoord</label>
+<input type="password" placeholder="Wachtwoord" @bind="Password" />
+
+<p class="message">@Message</p>
+
+<button @onclick="RegisterUser">Register</button>
+
+@code {
+    string? Name;
+    string? Email;
+    string? PhoneNumber;
+    string? Password;
+
+    string connectionString = new ConnectionString().connectionString;
+
+    string? Message;
+
+    void RegisterUser()
+    {
+
+        // security checks
+
+        bool isValid = true;
+
+        if (string.IsNullOrEmpty(Name))
+        {
+            Message = "Error: Fill in your name";
+            isValid = false;
+        }
+
+        if (string.IsNullOrEmpty(Email))
+        {
+            Message = "Error: Fill in your Email";
+            isValid = false;
+        }
+
+        if (UserService.CheckIfEmailExists(connectionString, Email))
+        {
+            Message = "Error: An account with this email already exists";
+            isValid = false;
+        }
+
+        if (string.IsNullOrEmpty(Password))
+        {
+            Message = "Error: Fill in a password";
+            isValid = false;
+        }
+
+        if (string.IsNullOrEmpty(Name))
+        {
+            Message = "Error: Fill in your name";
+            isValid = false;
+        }
+
+        if (isValid)
+        {
+            Password = BCrypt.Net.BCrypt.HashPassword(Password);
+
+            var newUser = new User(Name, Email, PhoneNumber, Password, RoleEnum.Customer);
+
+            newUser.UploadUser(connectionString);
+
+            UserService.LoginAsync(newUser);
+
+            Navigation.NavigateTo("reserveer");
+        }
+    }
+
+}

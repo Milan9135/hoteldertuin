@@ -1,0 +1,66 @@
+﻿@page "/login"
+
+@inject UserService UserService
+@inject NavigationManager Navigation
+
+<PageTitle>Login</PageTitle>
+
+<h3>Login</h3>
+
+
+<label>Email</label>
+<input type="email" placeholder="Email" @bind="Email" />
+
+<label>Wachtwoord</label>
+<input type="password" placeholder="Wachtwoord" @bind="Password" />
+
+<p class="message">@Message</p>
+
+<button @onclick="login">Login</button>
+
+
+@code {
+    string? Email;
+    string? Password;
+
+    string? Message;
+
+    string connectionString = new ConnectionString().connectionString;
+
+    void login()
+    {
+        bool isValid = true;
+
+        if (string.IsNullOrEmpty(Email))
+        {
+            Message = "Error: Fill in your Email";
+            isValid = false;
+        }
+
+        if (string.IsNullOrEmpty(Password))
+        {
+            Message = "Error: Fill in a password";
+            isValid = false;
+        }
+
+        if (isValid)
+        {
+            // login logic
+            // get user
+            User? user = new();
+            user = user.SelectUser(connectionString, Email);
+            if (user != null)
+            {
+                // compare passwords
+                if (BCrypt.Net.BCrypt.Verify(Password, user.Password))
+                {
+                    // login and redirect to reserveer
+                    UserService.LoginAsync(user);
+                    Navigation.NavigateTo("reserveer");
+                }
+            }
+            Message = "Error: email or password was wrong";
+        }
+    }
+}
+
